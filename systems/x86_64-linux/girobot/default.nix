@@ -30,13 +30,14 @@
 
   networking = {
     nftables.enable = true;
-    hostName = "touchsmart";
+    hostName = "girobot";
   };
 
   virtualisation.incus = {
     enable = true;
     ui.enable = true;
   };
+  boot.loader.grub.device = "nodev";
 
   system.stateVersion = "24.11";
 }

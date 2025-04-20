@@ -15,14 +15,13 @@
       xkb.enable = true;
     };
 
-    bundles = {
-      common.enable = true;
-      development.enable = true;
-    };
-
     nix = {
       settings.enable = true;
       development.enable = true;
+    };
+
+    tools = {
+      python.enable = true;
     };
 
     services = {
