@@ -37,6 +37,9 @@
       systems.modules.nixos = with inputs; [
         disko.nixosModules.disko
       ];
+      alias = {
+        packages.default = "install-isoConfigurations.canti";
+      };
     };
 }
 
