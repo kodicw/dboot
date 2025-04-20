@@ -1,0 +1,54 @@
+{ lib
+, pkgs
+, config
+, namespace
+, ...
+}:
+with lib;
+with lib.${namespace}; let
+  cfg = config.${namespace}.services.ceph;
+in
+{
+  options.${namespace}.services.ceph = with types;
+    {
+      enable = mkEnableOption "Whether or not to configure ceph";
+    };
+  users.groups.ceph = { };
+
+  config = mkIf cfg.enable {
+    users.users = {
+      mesh = { isNormalUser = true; extraGroups = [ "wheel" "docker" ]; };
+      ceph = { isNormalUser = true; extraGroups = [ "wheel" "ceph" ]; };
+    };
+    services.ceph = {
+      global.fsid = "4b687c5c-5a20-4a77-8774-487989fd0bc7";
+      osd = {
+        enable = true;
+        daemons = [ "0" ];
+      };
+      mon = {
+        enable = false;
+        extraConfig = {
+          "mon initial members" = "mesh-a";
+          "mon host" = "10.0.0.11";
+        };
+      };
+    };
+    systemd.services.ceph-mesh = {
+      enable = true;
+      description = "Ceph OSD Bindings";
+      unitConfig = {
+        After = "local-fs.target";
+        Wants = "local-fs.target";
+      };
+      serviceConfig = {
+        Type = "oneshot";
+        KillMode = "none";
+        Environment = "CEPH_VOLUME_TIMEOUT=10000 PATH=$PATH:/run/current-system/sw/bin/";
+        ExecStart = "/bin/sh -c 'timeout $CEPH_VOLUME_TIMEOUT /run/current-system/sw/bin/ceph-volume lvm activate --all --no-systemd'";
+        TimeoutSec = 0;
+      };
+      wantedBy = [ "multi-user.target" ];
+    };
+  };
+}
